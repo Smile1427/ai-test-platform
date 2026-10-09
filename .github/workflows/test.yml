@@ -13,7 +13,7 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: root123
+          MYSQL_ROOT_PASSWORD: pcl19921127
           MYSQL_DATABASE: edu_platform
         ports:
           - 3306:3306
@@ -54,7 +54,7 @@ jobs:
           python init_data.py
         env:
           DB_HOST: 127.0.0.1
-          DB_PASSWORD: root123
+          DB_PASSWORD: pcl19921127
 
       - name: 启动后端并运行所有测试
         run: |
