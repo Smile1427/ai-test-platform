@@ -10,7 +10,8 @@ from fastapi import HTTPException
 
 router = APIRouter()
 
-ai_service = AIService(api_key=config.ZHIPU_API_KEY)
+import os
+ai_service = AIService(api_key=os.getenv("ZHIPU_API_KEY", "c5033eaca6e049a9899f9f257ceb9116.7DL6kEMKh3zUJf85"))
 study_analyzer = StudyAnalyzer(api_key=config.ZHIPU_API_KEY)
 
 

@@ -67,6 +67,8 @@ jobs:
 
       - name: 运行AI功能测试
         run: python -m pytest test_ai/test_ai_features.py -v
+        env:
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
         continue-on-error: true
 
       - name: 生成测试报告

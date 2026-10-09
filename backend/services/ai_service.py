@@ -1,9 +1,11 @@
 from zai import ZhipuAiClient
+import os
 
+API_KEY = os.getenv("ZHIPU_API_KEY", "c5033eaca6e049a9899f9f257ceb9116.7DL6kEMKh3zUJf85")
 
 class AIService:
-    def __init__(self, api_key: str):
-        self.client = ZhipuAiClient(api_key=api_key)
+    def __init__(self, api_key: str = None):
+        self.client = ZhipuAiClient(api_key=api_key or API_KEY)
 
     def generate_course_intro(self, topic: str) -> str:
         if not topic or not topic.strip():

@@ -2,11 +2,14 @@
 from zai import ZhipuAiClient
 from sqlalchemy.orm import Session
 from models import Order, Course, Comment, User
+import os
+
+API_KEY = os.getenv("ZHIPU_API_KEY", "c5033eaca6e049a9899f9f257ceb9116.7DL6kEMKh3zUJf85")
 
 
 class StudyAnalyzer:
-    def __init__(self, api_key: str):
-        self.client = ZhipuAiClient(api_key=api_key)
+    def __init__(self, api_key: str = None):
+        self.client = ZhipuAiClient(api_key=api_key or API_KEY)
 
     def analyze(self, user_id: int, db: Session) -> dict:
         """分析用户学习记录，返回AI建议"""
