@@ -56,24 +56,22 @@ jobs:
           DB_HOST: 127.0.0.1
           DB_PASSWORD: root123
 
-      - name: 启动后端服务
+      - name: 启动后端并运行所有测试
         run: |
           cd backend
-          nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
-          sleep 8
-
-      - name: 运行接口测试
-        run: python tests/case_runner.py
-
-      - name: 运行AI功能测试
-        run: python -m pytest test_ai/test_ai_features.py -v
+          nohup uvicorn main:app --host 0.0.0.0 --port 8000 > /tmp/uvicorn.log 2>&1 &
+          sleep 10
+          cd ..
+          python tests/case_runner.py
+          python -m pytest test_ai/test_ai_features.py -v
+          python tests/report_generator.py
         env:
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
         continue-on-error: true
 
-      - name: 生成测试报告
-        if: always()
-        run: python tests/report_generator.py
+      - name: 打印后端日志（如果失败）
+        if: failure()
+        run: cat /tmp/uvicorn.log
 
       - name: 上传测试报告
         uses: actions/upload-artifact@v4
