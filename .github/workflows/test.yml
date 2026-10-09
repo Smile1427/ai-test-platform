@@ -69,8 +69,8 @@ jobs:
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
         continue-on-error: true
 
-      - name: 打印后端日志（如果失败）
-        if: failure()
+      - name: 打印后端日志
+        if: always()
         run: cat /tmp/uvicorn.log
 
       - name: 上传测试报告
@@ -79,3 +79,4 @@ jobs:
         with:
           name: test-report
           path: reports/
+
