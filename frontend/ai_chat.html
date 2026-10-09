@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AI助手 - 在线教育平台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .chat-box { height: 500px; overflow-y: auto; border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #fafafa; }
+        .chat-msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 10px; max-width: 85%; line-height: 1.6; white-space: pre-wrap; }
+        .chat-user { background: #4a90d9; color: white; margin-left: auto; }
+        .chat-ai { background: white; color: #333; border: 1px solid #eee; }
+        .quick-questions { margin-bottom: 10px; }
+        .quick-questions button { background: #f0f0f0; color: #333; margin: 3px; padding: 6px 12px; font-size: 13px; border: none; border-radius: 15px; cursor: pointer; }
+        .quick-questions button:hover { background: #e0e0e0; }
+        .chat-loading { color: #999; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="course_list.html">课程列表</a>
+            <a href="order.html">我的订单</a>
+            <a href="javascript:logout()">退出</a>
+        </div>
+
+        <div class="card">
+            <h1>🤖 AI学习助手</h1>
+            <div class="chat-box" id="chatBox"></div>
+            <div class="quick-questions">
+                <button onclick="quickAsk('我买了哪些课程？')">我买了哪些课程？</button>
+                <button onclick="quickAsk('给我一些学习建议')">给我一些学习建议</button>
+                <button onclick="quickAsk('我最近的学习情况怎么样？')">我的学习情况</button>
+            </div>
+            <input type="text" id="question" placeholder="输入你的问题..." onkeypress="if(event.key==='Enter') sendQuestion()">
+            <button onclick="sendQuestion()">发送</button>
+        </div>
+    </div>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        const userId = localStorage.getItem("userId") || 1;
+
+        if (checkLogin()) {
+            initChat();
+        }
+
+        async function initChat() {
+            const box = document.getElementById("chatBox");
+            const loading = document.createElement("div");
+            loading.className = "chat-msg chat-ai chat-loading";
+            loading.textContent = "正在分析你的学习记录...";
+            box.appendChild(loading);
+
+            const res = await request("/api/ai/analysis/" + userId);
+            box.removeChild(loading);
+
+            if (res.status === 200 && res.data.analysis) {
+                const data = res.data;
+                // AI主动分析，作为第一条消息
+                addMsg(data.analysis, "ai");
+                // 提示用户
+                addMsg("以上是我根据你的学习记录给出的分析。你还有什么想问的吗？", "ai");
+            } else {
+                addMsg("你好，我是AI学习助手。有什么可以帮你？", "ai");
+            }
+        }
+
+        function addMsg(text, type) {
+            const box = document.getElementById("chatBox");
+            const div = document.createElement("div");
+            div.className = "chat-msg chat-" + type;
+            div.textContent = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+            return div;
+        }
+
+        function quickAsk(text) {
+            document.getElementById("question").value = text;
+            sendQuestion();
+        }
+
+        async function sendQuestion() {
+            const input = document.getElementById("question");
+            const question = input.value.trim();
+            if (!question) return;
+            addMsg(question, "user");
+            input.value = "";
+            const loading = addMsg("思考中...", "ai");
+            loading.classList.add("chat-loading");
+
+            const res = await request("/api/ai/chat", "POST", { question, user_id: parseInt(userId) });
+            loading.remove();
+            if (res.status === 200) {
+                addMsg(res.data.answer, "ai");
+            } else {
+                addMsg("回答失败，请重试", "ai");
+            }
+        }
+    </script>
+</body>
+</html>

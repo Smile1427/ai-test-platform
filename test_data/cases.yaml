@@ -1,0 +1,452 @@
+- name: 注册新用户成功
+  type: 正常
+  module: 用户
+  interface: /api/user/register
+  method: POST
+  params:
+    username: newuser1
+    password: password123
+  expected: 返回200，包含user_id
+- name: 注册用户名已存在
+  type: 异常
+  module: 用户
+  interface: /api/user/register
+  method: POST
+  params:
+    username: existinguser
+    password: password123
+  expected: 返回400，用户名已存在
+- name: 注册用户名格式错误
+  type: 异常
+  module: 用户
+  interface: /api/user/register
+  method: POST
+  params:
+    username: invaliduser!
+    password: password123
+  expected: 返回400，格式错误
+- name: 注册用户名长度不足
+  type: 异常
+  module: 用户
+  interface: /api/user/register
+  method: POST
+  params:
+    username: us
+    password: password123
+  expected: 返回400，格式错误
+- name: 注册用户名长度超出
+  type: 异常
+  module: 用户
+  interface: /api/user/register
+  method: POST
+  params:
+    username: thisisaverylongusernameexceedingthelimit
+    password: password123
+  expected: 返回400，格式错误
+- name: 注册密码长度不足
+  type: 异常
+  module: 用户
+  interface: /api/user/register
+  method: POST
+  params:
+    username: newuser2
+    password: '12'
+  expected: 返回400，格式错误
+- name: 注册密码长度超出
+  type: 异常
+  module: 用户
+  interface: /api/user/register
+  method: POST
+  params:
+    username: newuser3
+    password: thisisaverylongpasswordexceedingthelimit
+  expected: 返回400，格式错误
+- name: 登录成功
+  type: 正常
+  module: 用户
+  interface: /api/user/login
+  method: POST
+  params:
+    username: existinguser
+    password: password123
+  expected: 返回401，包含token
+- name: 登录用户名不存在
+  type: 异常
+  module: 用户
+  interface: /api/user/login
+  method: POST
+  params:
+    username: nonexistentuser
+    password: password123
+  expected: 返回401，用户名不存在
+- name: 登录密码错误
+  type: 异常
+  module: 用户
+  interface: /api/user/login
+  method: POST
+  params:
+    username: existinguser
+    password: wrongpassword
+  expected: 返回401，密码错误
+- name: 获取课程列表成功
+  type: 正常
+  module: 课程
+  interface: /api/course/list
+  method: GET
+  params:
+    page: 1
+    size: 10
+  expected: 返回200，包含分页课程列表
+- name: 获取课程列表，页码为负数
+  type: 异常
+  module: 课程
+  interface: /api/course/list
+  method: GET
+  params:
+    page: -1
+    size: 10
+  expected: 返回400，页码或size非正整数
+- name: 获取课程详情，课程ID不存在
+  type: 异常
+  module: 课程
+  interface: /api/course/99999
+  method: GET
+  params: {}
+  expected: 返回200，课程不存在
+- name: 获取课程详情成功
+  type: 正常
+  module: 课程
+  interface: /api/course/1
+  method: GET
+  params: {}
+  expected: 返回200，包含课程详情
+- name: 创建订单，用户ID不存在
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 99999
+    course_id: 1
+  expected: 返回404，用户不存在
+- name: 创建订单，课程ID不存在
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 1
+    course_id: 99999
+  expected: 返回404，课程不存在
+- name: 创建订单，重复购买
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 1
+    course_id: 1
+  expected: 返回400，重复购买
+- name: 创建订单，库存不足
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 1
+    course_id: 5
+  expected: 返回400，库存不足
+- name: 获取订单列表，用户ID不存在
+  type: 异常
+  module: 订单
+  interface: /api/order/list/99999
+  method: GET
+  params:
+    page: 1
+    size: 10
+  expected: 返回404，用户不存在
+- name: 获取订单列表成功
+  type: 正常
+  module: 订单
+  interface: /api/order/list/1
+  method: GET
+  params:
+    page: 1
+    size: 10
+  expected: 返回200，包含分页订单列表
+- name: 创建订单成功
+  type: 正常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 1
+    course_id: 1
+  expected: 返回400，包含order_id和status
+- name: 用户不存在创建订单异常
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 99999
+    course_id: 1
+  expected: 返回404，用户不存在
+- name: 课程不存在创建订单异常
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 1
+    course_id: 99999
+  expected: 返回404，课程不存在
+- name: 重复购买创建订单异常
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 1
+    course_id: 1
+  expected: 返回400，重复购买
+- name: 库存不足创建订单异常
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 1
+    course_id: 5
+  expected: 返回400，库存不足
+- name: 用户ID为空创建订单异常
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: ''
+    course_id: 1
+  expected: 返回422，用户ID格式错误
+- name: 课程ID为空创建订单异常
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 1
+    course_id: ''
+  expected: 返回422，课程ID格式错误
+- name: 用户ID为负数创建订单异常
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: -1
+    course_id: 1
+  expected: 返回404，用户ID格式错误
+- name: 课程ID为负数创建订单异常
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 1
+    course_id: -1
+  expected: 返回404，课程ID格式错误
+- name: 用户ID为非数字创建订单异常
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: user1
+    course_id: 1
+  expected: 返回422，用户ID格式错误
+- name: 课程ID为非数字创建订单异常
+  type: 异常
+  module: 订单
+  interface: /api/order/create
+  method: POST
+  params:
+    user_id: 1
+    course_id: course1
+  expected: 返回422，课程ID格式错误
+- name: 添加评论成功
+  type: 正常
+  module: 评论
+  interface: /api/comment/add
+  method: POST
+  params:
+    user_id: 1
+    course_id: 1
+    content: 这是一条很好的评论。
+  expected: 返回200，包含comment_id
+- name: 添加评论内容为空
+  type: 异常
+  module: 评论
+  interface: /api/comment/add
+  method: POST
+  params:
+    user_id: 1
+    course_id: 1
+    content: ''
+  expected: 返回400，内容为空
+- name: 添加评论内容超长
+  type: 异常
+  module: 评论
+  interface: /api/comment/add
+  method: POST
+  params:
+    user_id: 1
+    course_id: 1
+    content: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  expected: 返回400，内容超长
+- name: 添加评论用户不存在
+  type: 异常
+  module: 评论
+  interface: /api/comment/add
+  method: POST
+  params:
+    user_id: 99999
+    course_id: 1
+    content: 这是一条评论。
+  expected: 返回404，用户不存在
+- name: 添加评论课程不存在
+  type: 异常
+  module: 评论
+  interface: /api/comment/add
+  method: POST
+  params:
+    user_id: 1
+    course_id: 99999
+    content: 这是一条评论。
+  expected: 返回404，课程不存在
+- name: 添加评论未购买课程
+  type: 异常
+  module: 评论
+  interface: /api/comment/add
+  method: POST
+  params:
+    user_id: 1
+    course_id: 3
+    content: 这是一条评论。
+  expected: 返回403，未购买课程
+- name: 删除评论成功
+  type: 正常
+  module: 评论
+  interface: /api/comment/delete/1
+  method: DELETE
+  params:
+    user_id: 1
+    comment_id: 1
+  expected: 返回404，删除成功消息
+- name: 删除评论不存在
+  type: 异常
+  module: 评论
+  interface: /api/comment/delete/99999
+  method: DELETE
+  params:
+    user_id: 1
+    comment_id: 99999
+  expected: 返回404，评论不存在
+- name: 删除他人评论
+  type: 异常
+  module: 评论
+  interface: /api/comment/delete/1
+  method: DELETE
+  params:
+    user_id: 2
+    comment_id: 1
+  expected: 返回404，无权删除他人评论
+- name: 点赞评论成功
+  type: 正常
+  module: 评论
+  interface: /api/comment/like/1
+  method: POST
+  params: {}
+  expected: 返回404，点赞数增加
+- name: 点赞不存在的评论
+  type: 异常
+  module: 评论
+  interface: /api/comment/like/99999
+  method: POST
+  params: {}
+  expected: 返回404，评论不存在
+- name: 生成AI课程介绍成功
+  type: 正常
+  module: AI
+  interface: /api/ai/generate
+  method: POST
+  params:
+    topic: Python编程
+  expected: 返回200，包含AI生成的课程介绍
+- name: 推荐课程列表成功
+  type: 正常
+  module: AI
+  interface: /api/ai/recommend/1
+  method: GET
+  params: {}
+  expected: 返回200，包含推荐课程列表
+- name: AI聊天成功
+  type: 正常
+  module: AI
+  interface: /api/ai/chat
+  method: POST
+  params:
+    question: Python基础是什么？
+  expected: 返回200，包含AI回答
+- name: AI学习分析成功
+  type: 正常
+  module: AI
+  interface: /api/ai/analysis/1
+  method: GET
+  params: {}
+  expected: 返回200，包含AI学习分析结果
+- name: 生成AI课程介绍失败，主题为空
+  type: 异常
+  module: AI
+  interface: /api/ai/generate
+  method: POST
+  params:
+    topic: ''
+  expected: 返回400，包含错误信息
+- name: 推荐课程列表失败，用户ID不存在
+  type: 异常
+  module: AI
+  interface: /api/ai/recommend/99999
+  method: GET
+  params: {}
+  expected: 返回404，包含错误信息
+- name: AI聊天失败，问题为空
+  type: 异常
+  module: AI
+  interface: /api/ai/chat
+  method: POST
+  params:
+    question: ''
+  expected: 返回400，包含错误信息
+- name: AI学习分析失败，用户ID不存在
+  type: 异常
+  module: AI
+  interface: /api/ai/analysis/99999
+  method: GET
+  params: {}
+  expected: 返回404，包含错误信息
+- name: 生成AI课程介绍失败，主题过长
+  type: 边界
+  module: AI
+  interface: /api/ai/generate
+  method: POST
+  params:
+    topic: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  expected: 返回400，包含错误信息
+- name: AI聊天失败，问题包含敏感词
+  type: 异常
+  module: AI
+  interface: /api/ai/chat
+  method: POST
+  params:
+    question: 这是一个敏感问题
+  expected: 返回400，包含错误信息

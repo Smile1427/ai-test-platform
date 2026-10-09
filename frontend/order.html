@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我的订单 - 在线教育平台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .order-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .order-title { font-size: 16px; color: #333; }
+        .order-info { color: #888; font-size: 12px; margin-top: 5px; }
+        .status-pending { color: #f39c12; }
+        .status-paid { color: #27ae60; }
+        .status-cancelled { color: #999; }
+        .pagination { text-align: center; margin-top: 20px; }
+        .pagination button { margin: 0 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="course_list.html">课程列表</a>
+            <a href="ai_chat.html">AI助手</a>
+            <a href="javascript:logout()">退出</a>
+        </div>
+        <div class="card">
+            <h1>我的订单</h1>
+            <div id="msg"></div>
+            <div id="orderList"></div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        const userId = localStorage.getItem("userId") || 1;
+        let currentPage = 1;
+        const pageSize = 10;
+
+        if (checkLogin()) loadOrders();
+
+        async function loadOrders() {
+            const res = await request(`/api/order/list/${userId}?page=${currentPage}&size=${pageSize}`);
+            const list = document.getElementById("orderList");
+            const pagination = document.getElementById("pagination");
+
+            if (res.status === 200 && res.data.data) {
+                if (res.data.data.length === 0) {
+                    list.innerHTML = "<p>暂无订单</p>";
+                    pagination.innerHTML = "";
+                    return;
+                }
+                list.innerHTML = res.data.data.map(o => {
+                    const statusText = { pending: "待支付", paid: "已支付", cancelled: "已取消" }[o.status] || o.status;
+                    const statusClass = "status-" + o.status;
+                    const cancelBtn = o.status === "pending"
+                        ? `<button onclick="cancelOrder(${o.order_id})" style="background:#e74c3c;margin-left:10px;">取消订单</button>`
+                        : "";
+                    return `
+                        <div class="order-item">
+                            <div>
+                                <div class="order-title">${o.course_title}</div>
+                                <div class="order-info">订单号：${o.order_id} · ${o.created_at}</div>
+                            </div>
+                            <div>
+                                <span class="course-price">¥${o.amount}</span>
+                                <span class="${statusClass}" style="margin-left:10px;">${statusText}</span>
+                                ${cancelBtn}
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+
+                // 分页
+                const totalPages = Math.ceil(res.data.total / pageSize);
+                let pageHtml = "";
+                if (currentPage > 1) pageHtml += `<button onclick="goPage(${currentPage - 1})">上一页</button>`;
+                pageHtml += `<span style="margin:0 10px;">第 ${currentPage} / ${totalPages} 页</span>`;
+                if (currentPage < totalPages) pageHtml += `<button onclick="goPage(${currentPage + 1})">下一页</button>`;
+                pagination.innerHTML = pageHtml;
+            }
+        }
+
+        function goPage(page) {
+            currentPage = page;
+            loadOrders();
+        }
+
+        async function cancelOrder(orderId) {
+            if (!confirm("确定取消该订单？")) return;
+            const res = await request(`/api/order/cancel/${orderId}?user_id=${userId}`, "POST");
+            if (res.status === 200) {
+                showMsg("订单已取消");
+                loadOrders();
+            } else {
+                showMsg(res.data.detail || "取消失败", "error");
+            }
+        }
+    </script>
+</body>
+</html>

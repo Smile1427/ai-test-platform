@@ -1,0 +1,79 @@
+在线教育平台接口需求文档
+
+一、用户模块
+1. POST /api/user/register
+   - 参数：username（6-20位字母数字下划线）、password（6-20位）
+   - 返回：注册成功消息和user_id
+   - 异常：用户名已存在、格式错误
+
+2. POST /api/user/login
+   - 参数：username、password
+   - 返回：token和role
+   - 异常：用户名不存在、密码错误
+
+二、课程模块
+3. GET /api/course/list?page=1&size=10
+   - 参数：page（页码，正整数）、size（每页数量，正整数）
+   - 返回：分页课程列表
+   - 异常：页码或size非正整数
+
+4. GET /api/course/{course_id}
+   - 参数：course_id（整数）
+   - 返回：课程详情
+   - 异常：课程不存在
+
+三、订单模块
+5. POST /api/order/create
+   - 参数：user_id（整数）、course_id（整数）
+   - 返回：order_id和status
+   - 异常：用户不存在、课程不存在、重复购买、库存不足
+
+6. GET /api/order/list/{user_id}?page=1&size=10
+   - 参数：user_id、page、size
+   - 返回：分页订单列表
+   - 异常：用户不存在
+
+7. POST /api/order/cancel/{order_id}?user_id=1
+   - 参数：order_id、user_id
+   - 返回：取消成功消息
+   - 异常：订单不存在、无权操作、非待支付状态
+
+四、评论模块
+8. POST /api/comment/add
+   - 参数：user_id、course_id、content
+   - 返回：comment_id
+   - 异常：用户不存在、课程不存在、未购买课程、内容为空、内容超长
+
+9. GET /api/comment/list/{course_id}
+   - 参数：course_id
+   - 返回：评论列表（含用户名）
+   - 异常：课程不存在
+
+10. DELETE /api/comment/delete/{comment_id}?user_id=1
+    - 参数：comment_id、user_id
+    - 返回：删除成功消息
+    - 异常：评论不存在、无权删除他人评论
+
+11. POST /api/comment/like/{comment_id}
+    - 参数：comment_id
+    - 返回：点赞数
+    - 异常：评论不存在
+
+五、AI功能模块
+12. POST /api/ai/generate
+    - 参数：topic（课程主题）
+    - 返回：AI生成的课程介绍
+    - 异常：空主题
+
+13. GET /api/ai/recommend/{user_id}
+    - 参数：user_id
+    - 返回：推荐课程列表（基于用户订单）
+
+14. POST /api/ai/chat
+    - 参数：question、user_id（可选）
+    - 返回：AI回答
+    - 异常：空问题、敏感问题
+
+15. GET /api/ai/analysis/{user_id}
+    - 参数：user_id
+    - 返回：AI学习分析

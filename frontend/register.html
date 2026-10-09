@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>注册 - 在线教育平台</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>用户注册</h1>
+            <div id="msg"></div>
+            <input type="text" id="username" placeholder="用户名（6-20位字母数字下划线）">
+            <input type="password" id="password" placeholder="密码（6-20位）">
+            <input type="password" id="confirmPassword" placeholder="确认密码">
+            <button onclick="doRegister()">注册</button>
+            <a href="login.html" style="display:block;margin-top:10px;color:#4a90d9;text-decoration:none;">已有账号？去登录</a>
+        </div>
+    </div>
+    <script src="js/api.js"></script>
+    <script>
+        async function doRegister() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const confirm = document.getElementById("confirmPassword").value;
+            if (!username || !password) {
+                showMsg("用户名和密码不能为空", "error");
+                return;
+            }
+            if (password !== confirm) {
+                showMsg("两次密码不一致", "error");
+                return;
+            }
+            const res = await request("/api/user/register", "POST", { username, password });
+            if (res.status === 200) {
+                showMsg("注册成功，正在跳转登录...");
+                setTimeout(() => { window.location.href = "login.html"; }, 1500);
+            } else {
+                showMsg(res.data.detail || "注册失败", "error");
+            }
+        }
+    </script>
+</body>
+</html>
